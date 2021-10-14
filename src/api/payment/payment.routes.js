@@ -2,10 +2,10 @@
 
 const controller = require("./payment.controller");
 const express = require("express");
-const { authenticateLocal, ensureAuthenticated } = require("../../middleware/auth.middleware");
+const { authenticateJWT, ensureAuthenticated } = require("../../middleware/auth.middleware");
 const router = express.Router();
 
-router.get("/verify/:reference", ensureAuthenticated, controller.verify);
+router.get("/verify/:reference", authenticateJWT, ensureAuthenticated, controller.verify);
 
 
 //access control

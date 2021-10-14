@@ -2,6 +2,7 @@
 
 const User = require("../../models/users.model");
 const bcrypt = require("bcryptjs");
+const { generateToken } = require("../../utils/generateToken.util")
 
 exports.signup = async (req, res) => {
   const { username, password } = await User(req.body);
@@ -23,11 +24,13 @@ exports.signup = async (req, res) => {
         newUser.save().then((user) => {
 
           // authenticate the user after signup
-          req.login(user, function (err) {
+          req.login(user, async (err) => {
             if (err) {
               throw new Error("Wrong username or password");
             }
-            return res.status(200).json({ status: true, message: "successfully registered", user });
+            // generate Token
+            let token = await generateToken({ _id: user?._id });
+            return res.status(200).json({ status: true, message: "successfully registered", user, token });
           });
         }).catch(err => {
           return res.status(401).json({ status: false, message: "user already exist" });
@@ -44,6 +47,9 @@ exports.signup = async (req, res) => {
 
 exports.signin = async (req, res) => {
 
+
+  // generate Token
+  let token = await generateToken({ _id: req.user?._id });
   //  user already authenticated
-  return res.status(200).json({ status: true, message: "successfully registered", user: req.user })
+  return res.status(200).json({ status: true, message: "successfully registered", user: req.user, token })
 };
