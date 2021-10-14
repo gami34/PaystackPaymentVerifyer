@@ -1,20 +1,28 @@
-"use strict";
+'use strict'
 
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
+const { ObjectId } = mongoose.Schema
 
 const userSchema = new mongoose.Schema(
   {
-    username: { type: String },
+    username: { type: String, unique: true, required: true },
     password: { type: String },
-    email: { type: String },
-    mobile: { type: String },
-    role: { type: String, enum: ["vendor", "rider", "customer"] },
+    account: { type: Number, default: 0 },
+    bonusCount: { type: Number, default: 0 },
   },
   {
-    collection: "users",
+    collection: 'users',
     timestamps: true,
-  },
-);
+    toJSON: { virtuals: true }
+  }
+)
 
-const User = mongoose.model("users", userSchema);
-module.exports = User;
+userSchema.index({ username: 1 }, {
+  unique: true,
+  sparse: true,
+  partialFilterExpression: { username: { $type: 'string' } },
+  background: false
+})
+
+const User = mongoose.model('users', userSchema)
+module.exports = User

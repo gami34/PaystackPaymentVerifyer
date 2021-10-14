@@ -11,6 +11,9 @@ module.exports = async (passport) => {
       const query = { username: username };
 
       User.findOne(query, (err, user) => {
+        console.log("user", user)
+        console.log("username", username)
+        console.log("password", password)
         if (err) {
           throw err;
         } else if (!user) {

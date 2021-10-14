@@ -1,15 +1,49 @@
 "use strict";
 
 const User = require("../../models/users.model");
+const bcrypt = require("bcryptjs");
 
 exports.signup = async (req, res) => {
-  const newUser = await User(req.body);
-  await newUser.save();
+  const { username, password } = await User(req.body);
+  let newUser = new User({
+    username,
+  })
 
-  req.login(newUser, function (err) {
-    if (err) {
-      console.log(err);
-    }
-    return res.json({ status: "success", user: req.user });
-  });
+  try {
+    bcrypt.genSalt(10, (err1, salt) => {
+      if (err1) {
+        throw new Error("Internal server error");
+      }
+      bcrypt.hash(password, salt, (err2, hash) => {
+        if (err2) {
+          throw new Error("Internal server error");
+        }
+        newUser.password = hash;
+
+        newUser.save().then((user) => {
+
+          // authenticate the user after signup
+          req.login(user, function (err) {
+            if (err) {
+              throw new Error("Wrong username or password");
+            }
+            return res.status(200).json({ status: true, message: "successfully registered", user });
+          });
+        }).catch(err => {
+          return res.status(401).json({ status: false, message: "user already exist" });
+        })
+
+      })
+    })
+
+  } catch (error) {
+    return res.status(501).json({ status: false, message: error.message });
+  }
+
+};
+
+exports.signin = async (req, res) => {
+
+  //  user already authenticated
+  return res.status(200).json({ status: true, message: "successfully registered", user: req.user })
 };
